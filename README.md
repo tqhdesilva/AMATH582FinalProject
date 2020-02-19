@@ -17,3 +17,4 @@
     but looks cool. Might be nice to revisit this since learning about filtering and wavelets.
 - Talk with Jason about DICOM data he was looking at before.
 - LANL Earthquake prediction: Another kaggle competition data set. Apply wavelets and signal analysis to this.
+- [DICOM](http://headctstudy.qure.ai/#dataset)
