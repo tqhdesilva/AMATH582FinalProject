@@ -8,6 +8,7 @@ DATA_DIR = os.path.join(THIS_FILE_DIR, "data/vsb-power-line-fault-detection")
 
 
 def load_train(n_columns: int = None) -> (pd.DataFrame, pd.DataFrame):
+    columns = None
     if n_columns:
         columns = [str(i) for i in range(n_columns)]
     train_data = pq.read_pandas(
@@ -22,6 +23,7 @@ def load_train(n_columns: int = None) -> (pd.DataFrame, pd.DataFrame):
 
 
 def load_test(n_columns: int = None) -> (pd.DataFrame, pd.DataFrame):
+    columns = None
     if n_columns:
         columns = [str(i) for i in range(n_columns)]
     test_data = pq.read_pandas(
