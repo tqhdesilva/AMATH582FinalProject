@@ -4,6 +4,7 @@ from scipy import signal
 import load
 import numpy as np
 from tqdm import tqdm
+import argparse
 
 
 Fs = 40000000  # TODO do we even need this?
@@ -19,7 +20,7 @@ def wavelet(s):
 
 
 def preprocess(loader, output):
-    signals, meta = loader(10)
+    signals, meta = loader()
     result = np.zeros((int(1e5), signals.shape[1]), dtype=np.float32)
     for i in tqdm(range(signals.shape[1])):
         z = wavelet(signals.iloc[:, i])
@@ -29,4 +30,11 @@ def preprocess(loader, output):
 
 
 if __name__ == "__main__":
-    preprocess(load.load_train, "data/preprocessed/train.npy")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--train", action="store_true", default=False)
+    parser.add_argument("--test", action="store_true", default=False)
+    args = parser.parse_args()
+    if args.train:
+        preprocess(load.load_train, "data/preprocessed/train.npy")
+    if args.test:
+        preprocess(load.load_test, "data/preprocessed/test.npy")
