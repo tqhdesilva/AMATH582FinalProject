@@ -28,15 +28,108 @@
 \maketitle
 
 \begin{abstract}
+    Partial discharge is a type of fault in electric transmission lines that can
+    cause damage to equipment. Detecting faults is necessary identify faulty
+    equipment before failure occurs. We apply Multi-Resolution Analysis(MRA) to
+    the problem of classifying faults from power line Voltage measurements.
 \end{abstract}
 
 \section{Introduction and Overview}
+This data set and problem are from a data science competition \cite{vsb_data}.
+The data set contains 8712 labeled training samples and 20337 unlabeled test
+samples. Predictions on the unlabeled test samples are used to score
+submissions. The scoring metric used in this competition is the Matthew's
+correlation coefficient(MCC), which penalizes both bad recall and precision.
+
+Each measurement consists of 3 samples, one measured from each phase of the
+3-phase power delivery scheme. In both the training and test set, each signal is
+labelled with it's phase. This is the breakdown of number of faults per measurement:
+\begin{center}
+\begin{tabular}{ |c|c|c|c| } 
+\hline
+\# Faults & Measurment Count \\
+\hline
+0 & 2710 \\ 
+1 & 19 \\
+2 & 19 \\
+3 & 156 \\
+\hline
+\end{tabular}
+\end{center}
+
+This makes it pretty clear that the binary classification problem has a class
+imbalance; just 6\% of the signals are faulty.
+It also makes it clear that one phase displaying a fault is related
+to whether the other 2 phases are also labelled faults. All 3 signals being
+labelled faults occurs much more frequently than just 1 or 2 phases having faults.
+
+Each signal has 800,000 Voltage measurements taken over 20 milliseconds. The
+sampling frequency $F_s$ is 40,000,000. See Figure~\ref{fig:periodogram} and
+Figure~\ref{fig:scalogram} for examples of the signals in the time domain.
+
+In this case, there are two challenges: i) reducing the dimensionality of each
+signal, ii) dealing with class imbalance. There's also the issue of encoding
+information about the other phases, but for now we will treat each signal as
+independent, even thought that is clearly not the case.
 
 \section{Theoretical Background}
+To preprocess our signals for classification, we used Principal Component
+Analysis(PCA) and the Continuous Wavelet Transform(CWT).
+
+PCA is a way to decompose data into the components which maximize variance, with
+the aim of reducing the dimensionality of the data. This is done by finding a
+diagonalization of the data. One method for PCA is diagonalizing using Singular
+Value Decomposition(SVD), which is the decomposition of an arbitrary matrix $A$
+into the components: $U \Sigma V^*$ where $\Sigma$ is a diagonal matrix, and
+$U$, $V$ are unitary matrices. The variance of the $i$th component is
+proportional to $\sigma_i$ where $\sigma_i$ is the $i$th diagonal element of
+$\Sigma_i$. We can choose how many components of the projected matrix to keep by
+calculating how many of the principal components to keep in order to account for
+a given proportion of the variance.
+
+The CWT is given as
+$$
+W_\psi[f](a, b) = (f, \psi_{a, b})
+$$
+where
+$$
+\psi_{a, b} = \frac{1}{\sqrt{a}}\psi(\frac{t - b}{a})
+$$
+$a$ and $b$ are the dilation and translation terms. The implementation of the
+CWT we used to get our scalogram features are just a discretization of this
+equation. Instead of $a$, $b$ being continuous we have
+$$
+\psi_{n, m} = \frac{1}{2^\frac{n}{v}}\psi(\frac{t}{2^\frac{n}{v}} - m F_s) \quad \mathrm{for}\quad m, n, v \in \mathbb{Z^+}
+$$
+CWT offers us the ability to capture both high frequency behavior with good time
+resolution and lower frequency behavior with less time resolution. MRA is how we
+apply the wavelet basis to get a representation of our signal at varying time
+and frequency resolution.
+
 
 \section{Algorithm Implementation and Development}
+In addition to preprocessing our data to reduce dimensionality, we applied
+Synthetic Minority Over-sampling Technique(SMOTE) to create a balanced training
+set. In order to choose a model, we compared model performance on MCC score
+using 5-fold cross validation.
+
 
 \section{Computational Results}
+Previously, we've used time-frequency analysis along with SVD to analyze musical
+scores\cite{hw2}. This was initially our plan for this problem, but we ran into
+some short-comings of using Short Time Fourier Transform(STFT) for
+time-frequency analysis. Figure~\ref{fig:periodogram} shows how STFT fails to
+encode both the low and high frequency parts of the signal. We tried tuning the
+STFT parameters to get some of both, but were never able to get a transform that
+kept both the very high frequency and low frequency characteristics of the
+signals. We wanted to capture high frequency behavior with good time resolution,
+so we decided to use MRA.
+
+Figure~\ref{fig:modes} shows some of the modes that were most significant in our
+training set. It seems like the low frequency behavior is captured in the first
+few modes. We needed 117 modes to capture 99.5\% of the variance, which is a big
+reduction form the 15,000 dimension scalogram.
+
 \begin{figure}
     \centering
     \includegraphics[width=0.8\linewidth]{stft.png}
