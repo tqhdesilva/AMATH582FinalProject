@@ -1,5 +1,3 @@
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer
 from scipy import signal
 import load
 import numpy as np
