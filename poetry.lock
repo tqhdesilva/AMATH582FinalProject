@@ -44,6 +44,24 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "4.4.2"
 
 [[package]]
+category = "main"
+description = "Toolbox for imbalanced dataset in machine learning."
+name = "imbalanced-learn"
+optional = false
+python-versions = "*"
+version = "0.6.2"
+
+[package.dependencies]
+joblib = ">=0.11"
+numpy = ">=1.11"
+scikit-learn = ">=0.22"
+scipy = ">=0.17"
+
+[package.extras]
+docs = ["sphinx", "sphinx-gallery", "sphinx-rtd-theme", "sphinxcontrib-bibtex", "numpydoc", "matplotlib", "pandas"]
+tests = ["pytest", "pytest-cov"]
+
+[[package]]
 category = "dev"
 description = "IPython Kernel for Jupyter"
 name = "ipykernel"
@@ -409,7 +427,7 @@ python-versions = "*"
 version = "0.1.8"
 
 [metadata]
-content-hash = "6fa9cfa6fd8ccae03ce8757a90600b30b8b3e5adbe6b71621b151cca3792fc3b"
+content-hash = "a1c2c4bd3c85892998742959805262c68dea5f009bd635deebf38d252be99ea6"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -432,6 +450,10 @@ cycler = [
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
     {file = "decorator-4.4.2.tar.gz", hash = "sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7"},
+]
+imbalanced-learn = [
+    {file = "imbalanced-learn-0.6.2.tar.gz", hash = "sha256:942b9a7f2e1df831097fbee587c5c90a4cc6afa6105b23d3e30d8798f1a9b17d"},
+    {file = "imbalanced_learn-0.6.2-py3-none-any.whl", hash = "sha256:1d5918619317f8fe4065148b9a5758fb999b82eedf665079d73e0c392767d1dd"},
 ]
 ipykernel = [
     {file = "ipykernel-5.1.4-py3-none-any.whl", hash = "sha256:ba8c9e5561f3223fb47ce06ad7925cb9444337ac367341c0c520ffb68ea6d120"},

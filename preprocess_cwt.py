@@ -13,7 +13,7 @@ k = 24
 
 
 def wavelet(s):
-    downsampled = signal.resample(s, n // 2 // 400)
+    downsampled = signal.resample(s, n // 2 // 1600)
     widths = [2 ** (j / k) for j in range(1, 101)]
     z = signal.cwt(downsampled, signal.ricker, widths)
     return z
@@ -21,7 +21,7 @@ def wavelet(s):
 
 def preprocess(loader, output):
     signals, meta = loader()
-    result = np.zeros((int(1e5), signals.shape[1]), dtype=np.float32)
+    result = np.zeros((int(25000), signals.shape[1]), dtype=np.float32)
     for i in tqdm(range(signals.shape[1])):
         z = wavelet(signals.iloc[:, i])
         z = np.ravel(z)
