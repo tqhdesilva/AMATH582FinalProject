@@ -29,21 +29,21 @@
 
 \begin{abstract}
     Partial discharge is a type of fault in electric transmission lines that can
-    cause damage to equipment. Detecting faults is necessary identify faulty
+    cause damage to equipment. Detecting partial discharge is necessary identify faulty
     equipment before failure occurs. We apply Multi-Resolution Analysis(MRA) to
     the problem of classifying faults from power line Voltage measurements.
 \end{abstract}
 
 \section{Introduction and Overview}
 This data set and problem are from a data science competition \cite{vsb_data}.
-The data set contains 8712 labeled training samples and 20337 unlabeled test
+The data set contains 8,712 labeled training samples and 20,337 unlabeled test
 samples. Predictions on the unlabeled test samples are used to score
 submissions. The scoring metric used in this competition is the Matthew's
-correlation coefficient(MCC), which penalizes both bad recall and precision.
+correlation coefficient(MCC), which penalizes both poor recall and poor precision.
 
-Each measurement consists of 3 samples, one measured from each phase of the
-3-phase power delivery scheme. In both the training and test set, each signal is
-labelled with it's phase. This is the breakdown of number of faults per measurement:
+One measurement consists of 3 samples, each measured from a phase of the
+3-phase power delivery scheme. In both the training and test set, each signal
+has an ordinal label denoting it's phase. This is the breakdown of number of faults per measurement:
 \begin{center}
 \begin{tabular}{ |c|c|c|c| } 
 \hline
@@ -57,9 +57,9 @@ labelled with it's phase. This is the breakdown of number of faults per measurem
 \end{tabular}
 \end{center}
 
-This makes it pretty clear that the binary classification problem has a class
+It is clear that the binary classification problem has a class
 imbalance; just 6\% of the signals are faulty.
-It also makes it clear that one phase displaying a fault is related
+It is also clear that one phase displaying a fault is related
 to whether the other 2 phases are also labelled faults. All 3 signals being
 labelled faults occurs much more frequently than just 1 or 2 phases having faults.
 
@@ -70,7 +70,7 @@ Figure~\ref{fig:scalogram} for examples of the signals in the time domain.
 In this case, there are two challenges: i) reducing the dimensionality of each
 signal, ii) dealing with class imbalance. There's also the issue of encoding
 information about the other phases, but for now we will treat each signal as
-independent, even thought that is clearly not the case.
+independent, even though that is as simplification.
 
 \section{Theoretical Background}
 To preprocess our signals for classification, we used Principal Component
@@ -84,8 +84,8 @@ into the components: $U \Sigma V^*$ where $\Sigma$ is a diagonal matrix, and
 $U$, $V$ are unitary matrices. The variance of the $i$th component is
 proportional to $\sigma_i^2$ where $\sigma_i$ is the $i$th diagonal element of
 $\Sigma_i$. We can choose how many components of the projected matrix to keep by
-calculating how many of the principal components to keep in order to account for
-a given proportion of the variance.
+calculating how many of the principal components are needed to account for
+a given proportion of the total variance.
 
 The CWT is given as
 $$
@@ -117,9 +117,10 @@ using 5-fold cross validation. This is the algorithm we used to evaluate each mo
     \begin{algorithmic}
         \REQUIRE{$X$, $y$: training signals along with binary labels} 
         \ENSURE{Cross validation Score}
-        \STATE $X \leftarrow \mathrm{Scalograms of} X$
+        \STATE $X \leftarrow$ Scalograms of $X$
         \STATE Split $X$ and $y$ into 5 folds.
         \FOR{Each fold}
+            \STATE Hold that fold out as training fold, the other 4 are training folds.
             \STATE $P \leftarrow$Principal Component Vectors of training
             set
             \STATE $X \leftarrow$ Projection of all scalograms onto $P$
@@ -140,19 +141,19 @@ scores\cite{hw4b}. This was initially our plan for this problem, but we ran into
 some short-comings of using Short Time Fourier Transform(STFT) for
 time-frequency analysis. Figure~\ref{fig:periodogram} shows how STFT fails to
 encode both the low and high frequency parts of the signal. We tried tuning the
-STFT parameters to get some of both, but were never able to get a transform that
-kept both the very high frequency and low frequency characteristics of the
-signals. We wanted to capture high frequency behavior with good time resolution,
+STFT parameters to get better time localization at high frequency, but were never able to get a transform that
+kept both good time and frequency resolution. We wanted to also capture high frequency behavior with good time resolution,
 so we decided to use MRA.
 
 Figure~\ref{fig:modes} shows some of the modes that were most significant in our
 training set. It seems like the low frequency behavior is captured in the first
-few modes. We needed 117 modes to capture 99.5\% of the variance, which is a big
-reduction form the 15,000 dimension scalogram.
+few modes. The first117 modes captured 99.5\% of the variance, which is a big
+reduction from the 15,000 dimension scalogram.
 
 MCC score is a correlation score, so it takes on values between -1 and 1. A MCC
-score of 0 is equivalent to random guessing. Our final model had an average
-cross-validation MCC score of 0.210.
+score of 0 is equivalent to random guessing. A score of 1 is a perfect
+classifier, and a score of -1 means the predictions are always wrong
+Our final model had an average cross-validation MCC score of 0.210.
 To get the score on the test set, we had to submit the predictions to the Kaggle
 website. They have a public score(57\% of test data that is available to be
 scored during the competition) and a private score(based on the held out 43\% of
@@ -182,13 +183,16 @@ well on the private dataset, which is the one that counts, with a MCC score of
 \end{figure}
 
 \section{Summary and Conclusions}
-Our final model a gradient boosting model with SMOTE. However, we used cross
-validation to try a lot of different models with other sampling techniques.
-In general, random undersampling was pretty close to SMOTE in terms of
-performance. Without resampling, it was common for the classifier to have 0
-recall and consequently score 0 MCC score as well. We also tried logistic
+Our final model a gradient boosting model with SMOTE built using scalogram
+features whose dimension was reduced using PCA
+We used cross validation to try a lot of different models with and without
+resampling techniques. In addition to SMOTE, we also tried undersampling.
+In some cases, random undersampling was pretty close to SMOTE in terms of
+performance. Without resampling, the classifier performance was poor-- almost as
+bad as random guessing.
+The other models evaluated were logistic
 regression and Support Vector Classifier(SVC). Both of these under-performed the
-gradient boosting model with SMOTE.
+gradient boosting model.
 
 \begin{center}
 \begin{tabular}{ |c|c|c|c| } 
@@ -217,10 +221,11 @@ time localization of the high frequency signals. Downsampling the signals before
 applying the wavelet transform was necessary just to get everything to fit in
 memory.
 
-One alternative I was looking at, and which was mentioned in \cite{article}, is
-to use the Discrete Wavelet Transform(DWT) instead of CWT. Supposedly this is
-more efficient, as the CWT has a lot of redundant information. There's also more
-easily available libraries to both apply DWT efficiently.
+One alternative we were looking at, and which was mentioned in \cite{article}, is
+to use the Discrete Wavelet Transform(DWT) instead of CWT. DWT is
+more efficient, as the CWT contains a lot of redundant information. There's also more
+easily available libraries to both apply DWT efficiently. However DWT doesn't
+produce a nice scalogram.
 
 Finally, it's still unclear why performance on the public and private test sets
 are so different. Test set performance is very similar to cross validation
