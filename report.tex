@@ -37,6 +37,26 @@
 \section{Algorithm Implementation and Development}
 
 \section{Computational Results}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{stft.png}
+    \caption{Periodograms for three phases along with original signals.}
+    \label{fig:periodogram}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\linewidth]{cwt.png}
+    \caption{Scalogram with original signal.}
+    \label{fig:scalogram}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{pca_modes.png}
+    \caption{PCA Modes}
+    \label{fig:modes}
+\end{figure}
 
 \section{Summary and Conclusions}
 
@@ -57,5 +77,15 @@
     \subsection{load.py}
         \label{subsec:load}
         \inputminted{python}{load.py}
+    \subsection{pca\_modes.py}
+        \label{subsec:pca_modes}
+        \inputminted{python}{pca_modes.py}
+    \subsection{pipeline.py}
+        \label{subsec:pipeline}
+        \inputminted{python}{pipeline.py}
+    \subsection{plots.py}
+        \label{subsec:plots}
+        \inputminted{python}{plots.py}
+
 \end{appendices}
 \end{document}
