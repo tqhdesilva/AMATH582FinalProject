@@ -7,8 +7,8 @@ from tqdm import tqdm
 import argparse
 
 
-Fs = 40000000  # TODO do we even need this?
-n = int(Fs * 20e-3)  # 20e-3 is the frequency of the signal
+Fs = 40000000
+n = int(Fs * 20e-3)
 k = 24
 
 
