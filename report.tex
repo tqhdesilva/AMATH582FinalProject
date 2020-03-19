@@ -82,7 +82,7 @@ diagonalization of the data. One method for PCA is diagonalizing using Singular
 Value Decomposition(SVD), which is the decomposition of an arbitrary matrix $A$
 into the components: $U \Sigma V^*$ where $\Sigma$ is a diagonal matrix, and
 $U$, $V$ are unitary matrices. The variance of the $i$th component is
-proportional to $\sigma_i$ where $\sigma_i$ is the $i$th diagonal element of
+proportional to $\sigma_i^2$ where $\sigma_i$ is the $i$th diagonal element of
 $\Sigma_i$. We can choose how many components of the projected matrix to keep by
 calculating how many of the principal components to keep in order to account for
 a given proportion of the variance.
@@ -111,12 +111,32 @@ and frequency resolution.
 In addition to preprocessing our data to reduce dimensionality, we applied
 Synthetic Minority Over-sampling Technique(SMOTE) to create a balanced training
 set. In order to choose a model, we compared model performance on MCC score
-using 5-fold cross validation.
+using 5-fold cross validation. This is the algorithm we used to evaluate each model.
+
+\begin{algorithm}
+    \begin{algorithmic}
+        \REQUIRE{$X$, $y$: training signals along with binary labels} 
+        \ENSURE{Cross validation Score}
+        \STATE $X \leftarrow \mathrm{Scalograms of} X$
+        \STATE Split $X$ and $y$ into 5 folds.
+        \FOR{Each fold}
+            \STATE $P \leftarrow$Principal Component Vectors of training
+            set
+            \STATE $X \leftarrow$ Projection of all scalograms onto $P$
+            \STATE Resample training folds.
+            \STATE Fit model on training folds of $X$, $y$
+            \STATE Score model on test fold of $X$, $y$
+        \ENDFOR
+        \RETURN Cross Validation Scores
+    \end{algorithmic}
+    \caption{Model Selection}
+    \label{alg:crossval}
+\end{algorithm}
 
 
 \section{Computational Results}
 Previously, we've used time-frequency analysis along with SVD to analyze musical
-scores\cite{hw2}. This was initially our plan for this problem, but we ran into
+scores\cite{hw4b}. This was initially our plan for this problem, but we ran into
 some short-comings of using Short Time Fourier Transform(STFT) for
 time-frequency analysis. Figure~\ref{fig:periodogram} shows how STFT fails to
 encode both the low and high frequency parts of the signal. We tried tuning the
@@ -129,6 +149,16 @@ Figure~\ref{fig:modes} shows some of the modes that were most significant in our
 training set. It seems like the low frequency behavior is captured in the first
 few modes. We needed 117 modes to capture 99.5\% of the variance, which is a big
 reduction form the 15,000 dimension scalogram.
+
+MCC score is a correlation score, so it takes on values between -1 and 1. A MCC
+score of 0 is equivalent to random guessing. Our final model had an average
+cross-validation MCC score of 0.210.
+To get the score on the test set, we had to submit the predictions to the Kaggle
+website. They have a public score(57\% of test data that is available to be
+scored during the competition) and a private score(based on the held out 43\% of
+the data that is held out until the competition deadline). Oddly our model did
+well on the private dataset, which is the one that counts, with a MCC score of
+0.216. We scored poorly on the public set, with a MCC score of 0.056.
 
 \begin{figure}
     \centering
@@ -152,6 +182,52 @@ reduction form the 15,000 dimension scalogram.
 \end{figure}
 
 \section{Summary and Conclusions}
+Our final model a gradient boosting model with SMOTE. However, we used cross
+validation to try a lot of different models with other sampling techniques.
+In general, random undersampling was pretty close to SMOTE in terms of
+performance. Without resampling, it was common for the classifier to have 0
+recall and consequently score 0 MCC score as well. We also tried logistic
+regression and Support Vector Classifier(SVC). Both of these under-performed the
+gradient boosting model with SMOTE.
+
+\begin{center}
+\begin{tabular}{ |c|c|c|c| } 
+\hline
+\# Model & Cross-val MCC Score \\
+\hline
+Logistic Regression & 0.033 \\ 
+Logistic Regression with SMOTE & 0.003 \\
+Logistic Regression with Undersampling & 0.013 \\
+SVC & 0.0 \\
+SVC with SMOTE & 0.182 \\
+Gradient Boosting & 0.085 \\
+Gradient Boosting with SMOTE & 0.210 \\
+Gradient Boosting with Undersampling & 0.166 \\
+\hline
+\end{tabular}
+\end{center}
+
+
+The vast majority of our time spent on this project was on preprocessing.
+Initially we were planning on using the same technique as \cite{hw4b}, STFT and
+PCA. It seemed like there were some high frequency, time localized behavior
+happening in the signals. Without having much background knowledge on the
+problem domain, it was impossible to say for certain that we didn't need good
+time localization of the high frequency signals. Downsampling the signals before
+applying the wavelet transform was necessary just to get everything to fit in
+memory.
+
+One alternative I was looking at, and which was mentioned in \cite{article}, is
+to use the Discrete Wavelet Transform(DWT) instead of CWT. Supposedly this is
+more efficient, as the CWT has a lot of redundant information. There's also more
+easily available libraries to both apply DWT efficiently.
+
+Finally, it's still unclear why performance on the public and private test sets
+are so different. Test set performance is very similar to cross validation
+performance. There may be pathological examples added into the public test set,
+in order to throw people off who are trying to game the public test set for
+information about the private test set.
+
 
 \FloatBarrier
 \printbibliography
@@ -160,7 +236,13 @@ reduction form the 15,000 dimension scalogram.
     \section{Python Functions}
         \label{sec:functions}
         \begin{itemize}
-            \item Placeholder
+            \item \texttt{scipy.signal.cwt} Apply discretized CWT to signal.
+            \item \texttt{sklearn.ensemble.GradientBoostingClassifier} Iterative
+            ensemble learner for classification.
+            \item \texttt{sklearn.model\_selection.cross\_validation} Fit and
+            score pipeline using k-fold cross-validation.
+            \item \texttt{imblearn.oversample.SMOTE} Apply SMOTE to generate
+            more instances of non-majority class.
         \end{itemize}
     \section{Python Code}
         \label{sec:code}
