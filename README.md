@@ -5,3 +5,5 @@
   `./data` directory
 - setup poetry environment
 - run `python preprocess_cwt.py --train --test`
+
+See the [writeup](./report.pdf).
